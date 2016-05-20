@@ -5,26 +5,33 @@ package in.codehex.facilis.model;
  */
 public class CurrentOrderItem {
 
-    private int detailsId, detailsOrderId, detailsTotalBids, detailsDurationStatus;
-    private String detailsPostedDate, detailsBiddingTime, detailsLowestBidRate,
-            detailsHighestBidRate, detailsAverageBidRate;
-    private int statusColor;
+    private int detailsId, detailsOrderId, detailsTotalBids, detailsDurationStatus, statusColor;
+    private String detailsLowestBidRate, detailsHighestBidRate, detailsAverageBidRate,
+            detailsPostedDate, detailsBiddingTime;
 
     public CurrentOrderItem(int detailsId, int detailsOrderId, int detailsTotalBids,
-                            int detailsDurationStatus, String detailsPostedDate,
-                            String detailsBiddingTime, String detailsLowestBidRate,
-                            String detailsHighestBidRate, String detailsAverageBidRate,
-                            int statusColor) {
+                            int detailsDurationStatus, int statusColor,
+                            String detailsLowestBidRate, String detailsHighestBidRate,
+                            String detailsAverageBidRate, String detailsPostedDate,
+                            String detailsBiddingTime) {
         this.detailsId = detailsId;
         this.detailsOrderId = detailsOrderId;
         this.detailsTotalBids = detailsTotalBids;
         this.detailsDurationStatus = detailsDurationStatus;
-        this.detailsPostedDate = detailsPostedDate;
-        this.detailsBiddingTime = detailsBiddingTime;
+        this.statusColor = statusColor;
         this.detailsLowestBidRate = detailsLowestBidRate;
         this.detailsHighestBidRate = detailsHighestBidRate;
         this.detailsAverageBidRate = detailsAverageBidRate;
-        this.statusColor = statusColor;
+        this.detailsPostedDate = detailsPostedDate;
+        this.detailsBiddingTime = detailsBiddingTime;
+    }
+
+    public String getDetailsBiddingTime() {
+        return detailsBiddingTime;
+    }
+
+    public void setDetailsBiddingTime(String detailsBiddingTime) {
+        this.detailsBiddingTime = detailsBiddingTime;
     }
 
     public int getDetailsId() {
@@ -59,20 +66,12 @@ public class CurrentOrderItem {
         this.detailsDurationStatus = detailsDurationStatus;
     }
 
-    public String getDetailsPostedDate() {
-        return detailsPostedDate;
+    public int getStatusColor() {
+        return statusColor;
     }
 
-    public void setDetailsPostedDate(String detailsPostedDate) {
-        this.detailsPostedDate = detailsPostedDate;
-    }
-
-    public String getDetailsBiddingTime() {
-        return detailsBiddingTime;
-    }
-
-    public void setDetailsBiddingTime(String detailsBiddingTime) {
-        this.detailsBiddingTime = detailsBiddingTime;
+    public void setStatusColor(int statusColor) {
+        this.statusColor = statusColor;
     }
 
     public String getDetailsLowestBidRate() {
@@ -99,11 +98,11 @@ public class CurrentOrderItem {
         this.detailsAverageBidRate = detailsAverageBidRate;
     }
 
-    public int getStatusColor() {
-        return statusColor;
+    public String getDetailsPostedDate() {
+        return detailsPostedDate;
     }
 
-    public void setStatusColor(int statusColor) {
-        this.statusColor = statusColor;
+    public void setDetailsPostedDate(String detailsPostedDate) {
+        this.detailsPostedDate = detailsPostedDate;
     }
 }
