@@ -14,11 +14,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
         android:orientation="horizontal">
 
         <View
-            android:id="@+id/view_status"
+            android:id="@+id/view_delivery_status"
             android:layout_width="@dimen/status_width"
             android:layout_height="match_parent" />
 
@@ -33,33 +32,12 @@
                 android:layout_gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <LinearLayout
-                    android:id="@+id/total_bids"
+                <ImageView
+                    android:id="@+id/img_dp"
                     android:layout_width="@dimen/circle_item"
                     android:layout_height="@dimen/circle_item"
-                    android:layout_gravity="center"
                     android:layout_margin="@dimen/primary_margin"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/text_total_bids"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textColor="@android:color/white"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/text_bid"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:textColor="@android:color/white"
-                        android:textSize="@dimen/small_text" />
-
-                </LinearLayout>
+                    android:contentDescription="@string/desc_dp" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -67,7 +45,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/text_order_id"
+                        android:id="@+id/text_name"
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_margin="@dimen/lite"
@@ -76,13 +54,20 @@
                         android:textColor="@android:color/black" />
 
                     <TextView
-                        android:id="@+id/text_duration"
+                        android:id="@+id/text_bid_cost"
                         android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:layout_margin="@dimen/lite"
                         android:layout_weight="1"
-                        android:gravity="center_vertical"
-                        android:textStyle="bold" />
+                        android:gravity="center_vertical" />
+
+                    <TextView
+                        android:id="@+id/text_payment_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_margin="@dimen/lite"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical" />
 
                 </LinearLayout>
 
@@ -123,13 +108,13 @@
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/text_lowest_bid"
+                            android:id="@+id/text_order_id"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:padding="@dimen/duplex" />
 
                         <TextView
-                            android:id="@+id/text_highest_bid"
+                            android:id="@+id/text_total_bids"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:padding="@dimen/duplex" />
@@ -142,6 +127,18 @@
                         android:layout_weight="1"
                         android:gravity="center_vertical"
                         android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/text_lowest_bid"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="@dimen/duplex" />
+
+                        <TextView
+                            android:id="@+id/text_highest_bid"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="@dimen/duplex" />
 
                         <TextView
                             android:id="@+id/text_average_bid"
@@ -168,12 +165,12 @@
                         android:textColor="@color/primary" />
 
                     <Button
-                        android:id="@+id/btn_all_bids"
+                        android:id="@+id/btn_mail_invoice"
                         style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="@string/btn_all_bids"
+                        android:text="@string/btn_mail_invoice"
                         android:textColor="@color/primary" />
 
                 </LinearLayout>
