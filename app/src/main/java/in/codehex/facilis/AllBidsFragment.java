@@ -314,7 +314,7 @@ public class AllBidsFragment extends Fragment {
             holder.textBidDate.setText(allBidItem.getBidTime());
 
             Glide.with(context).load(allBidItem.getBidByUserImage())
-                    .placeholder(R.drawable.ic_person)
+                    .placeholder(R.drawable.ic_person_gray)
                     .transform(new CircleTransform(context)).into(holder.imgDp);
 
             holder.btnAcceptBid.setOnClickListener(new View.OnClickListener() {
