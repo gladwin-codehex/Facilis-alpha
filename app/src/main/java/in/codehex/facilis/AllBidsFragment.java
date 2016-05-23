@@ -14,10 +14,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -55,6 +58,7 @@ public class AllBidsFragment extends Fragment {
     AllBidsAdapter mAdapter;
     SharedPreferences userPreferences;
     LinearLayoutManager mLayoutManager;
+    ProgressDialog mProgressDialog;
     int mOrderId;
     int mCount = 0;
     boolean isEnded = false;
@@ -89,6 +93,7 @@ public class AllBidsFragment extends Fragment {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.all_bids_list);
 
         mAllBidItemList = new ArrayList<>();
+        mProgressDialog = new ProgressDialog(getContext());
         mLayoutManager = new LinearLayoutManager(getContext());
         mAdapter = new AllBidsAdapter(getContext(), mAllBidItemList);
         userPreferences = getActivity().getSharedPreferences(Config.PREF_USER,
@@ -104,6 +109,8 @@ public class AllBidsFragment extends Fragment {
         if (bundle != null) {
             mOrderId = bundle.getInt(Config.KEY_BUNDLE_ORDER_ID);
         }
+
+        mProgressDialog.setMessage("Accepting bid..");
 
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -129,29 +136,19 @@ public class AllBidsFragment extends Fragment {
                 }
                 if (!loading && (totalItemCount - visibleItemCount)
                         <= (firstVisibleItem + visibleThreshold)) {
-                    processOrderedItems();
+                    processBids();
                     loading = true;
                 }
             }
         });
 
-        processOrderedItems();
+        processBids();
     }
 
     /**
-     * Reset the count for all the integers and values of booleans to default.
+     * Fetch the all the bid list from the server.
      */
-    private void resetData() {
-        mCount = 0;
-        previousTotal = 0;
-        loading = true;
-        isEnded = false;
-    }
-
-    /**
-     * Fetch the ordered items list from the server.
-     */
-    private void processOrderedItems() {
+    private void processBids() {
         final JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put(Config.KEY_API_USER, userPreferences.getInt(Config.KEY_PREF_USER_ID, 0));
@@ -266,6 +263,98 @@ public class AllBidsFragment extends Fragment {
     }
 
     /**
+     * Send the request to the server for the accept bid json object.
+     * @param allBidItem an object which contains all the bid details.
+     */
+    private void acceptBid(AllBidItem allBidItem) {
+        final JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(Config.KEY_API_USER, userPreferences.getInt(Config.KEY_PREF_USER_ID, 0));
+            jsonObject.put(Config.KEY_API_ORDER, allBidItem.getOrder());
+            jsonObject.put(Config.KEY_API_BID, allBidItem.getId());
+        } catch (JSONException e) {
+            // TODO: remove toast
+            Toast.makeText(getContext(),
+                    "Error occurred while generating data - "
+                            + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        showProgressDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                Config.API_ACCEPT_BID, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                hideProgressDialog();
+                try {
+                    JSONObject responseObject = new JSONObject(response);
+                    String message = responseObject.getString(Config.KEY_API_MESSAGE);
+                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+
+                } catch (JSONException e) {
+                    // TODO: remove toast
+                    Toast.makeText(getContext(),
+                            "Error occurred while parsing data - "
+                                    + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                hideProgressDialog();
+                NetworkResponse response = error.networkResponse;
+                try {
+                    byte[] bytes = response.data;
+                    String data = new String(bytes);
+                    if (response.statusCode == 400) {
+                        JSONObject errorObject = new JSONObject(data);
+                        int mError = errorObject.getInt(Config.KEY_API_ERROR);
+                        String mMessage = errorObject.getString(Config.KEY_API_MESSAGE);
+                        if (mError == 400)
+                            isEnded = true;
+                        // TODO: remove toast
+                        Toast.makeText(getContext(), mMessage, Toast.LENGTH_SHORT).show();
+                    } else if (response.statusCode == 401) {
+                        JSONObject errorObject = new JSONObject(data);
+                        String errorData = errorObject.getString(Config.KEY_API_DETAIL);
+                        // TODO: remove toast
+                        Toast.makeText(getContext(), errorData, Toast.LENGTH_SHORT).show();
+                    }
+                } catch (JSONException e) {
+                    // TODO: remove toast
+                    Toast.makeText(getContext(),
+                            "Error occurred while parsing data - "
+                                    + e.getMessage(), Toast.LENGTH_SHORT).show();
+                } catch (NullPointerException e) {
+                    // TODO: remove toast
+                    Toast.makeText(getContext(), "Network error - "
+                            + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Token " +
+                        userPreferences.getString(Config.KEY_PREF_TOKEN, null));
+                return headers;
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                return jsonObject.toString().getBytes();
+            }
+
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+        };
+
+        AppController.getInstance().addToRequestQueue(stringRequest, "accept_bid");
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(50000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+    }
+
+    /**
      * Get the datetime string value and converts it to the format DD, MON YEAR.
      *
      * @param bidDate the original string got from the server
@@ -281,6 +370,47 @@ public class AllBidsFragment extends Fragment {
                     Toast.LENGTH_SHORT).show();
         }
         return bidDate;
+    }
+
+    /**
+     * Display an alert when accept bid button is clicked.
+     *
+     * @param allBidItem an object which contains all the bid details.
+     */
+    private void showAlertAcceptBid(final AllBidItem allBidItem) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+        alertDialog.setTitle("Accept Bid");
+        alertDialog.setMessage("Are you sure you want to accept this bid?");
+        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                acceptBid(allBidItem);
+            }
+        });
+        alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alertDialog.show();
+    }
+
+    /**
+     * Display the progress dialog if the dialog is not being shown.
+     */
+    private void showProgressDialog() {
+        if (!mProgressDialog.isShowing()) {
+            mProgressDialog.show();
+        }
+    }
+
+    /**
+     * Hide the progress dialog if the dialog is being shown.
+     */
+    private void hideProgressDialog() {
+        if (mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+        }
     }
 
     /**
@@ -306,7 +436,7 @@ public class AllBidsFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(AllBidsHolder holder, int position) {
-            AllBidItem allBidItem = mAllBidItemList.get(position);
+            final AllBidItem allBidItem = mAllBidItemList.get(position);
             holder.textName.setText(getString(R.string.text_name,
                     allBidItem.getBidByFirstName(), allBidItem.getBidByLastName()));
             holder.textBidAmount.setText(getString(R.string.text_bid_amount,
@@ -320,7 +450,7 @@ public class AllBidsFragment extends Fragment {
             holder.btnAcceptBid.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // TODO: call accept bid api
+                    showAlertAcceptBid(allBidItem);
                 }
             });
         }
