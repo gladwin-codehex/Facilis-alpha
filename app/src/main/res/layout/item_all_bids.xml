@@ -4,19 +4,18 @@
     android:layout_height="wrap_content"
     android:background="@android:color/white"
     android:orientation="horizontal"
-    android:padding="@dimen/primary_padding">
+    android:padding="@dimen/lite">
 
     <ImageView
         android:id="@+id/img_dp"
         android:layout_width="@dimen/circle_item"
         android:layout_height="@dimen/circle_item"
-        android:layout_margin="@dimen/primary_margin"
-        android:background="@color/material_amber"
+        android:layout_margin="@dimen/lite"
         android:contentDescription="@string/desc_dp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="vertical">
 
@@ -39,7 +38,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <TextView

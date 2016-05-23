@@ -2,6 +2,7 @@ package in.codehex.facilis;
 
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -25,13 +26,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import in.codehex.facilis.app.AppController;
@@ -197,24 +194,8 @@ public class OrderedItemsFragment extends Fragment {
         };
 
         AppController.getInstance().addToRequestQueue(stringRequest, "view_ordered_items");
-    }
-
-    /**
-     * Get the datetime string value and converts it to the format DD, MON YEAR.
-     *
-     * @param postedDate the original string got from the server
-     * @return formatted date string
-     */
-    private String getPostedDate(String postedDate) {
-        try {
-            Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",
-                    Locale.getDefault()).parse(postedDate);
-            return String.format(Locale.getDefault(), "%td, %tb %tY", date, date, date);
-        } catch (ParseException e) {
-            Toast.makeText(getContext(), "Date parse error - " + e.getMessage(),
-                    Toast.LENGTH_SHORT).show();
-        }
-        return postedDate;
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(50000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
     }
 
     /**

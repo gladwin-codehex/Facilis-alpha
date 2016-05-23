@@ -6,18 +6,18 @@ package in.codehex.facilis.model;
 public class AllBidItem {
 
     private int id, order, bidById, bidCost;
-    private String bidByFirstName, bidByLastName, bidByUserImg, bidTime;
+    private String bidByFirstName, bidByLastName, bidByUserImage, bidTime;
 
     public AllBidItem(int id, int order, int bidById, int bidCost,
                       String bidByFirstName, String bidByLastName,
-                      String bidByUserImg, String bidTime) {
+                      String bidByUserImage, String bidTime) {
         this.id = id;
         this.order = order;
         this.bidById = bidById;
         this.bidCost = bidCost;
         this.bidByFirstName = bidByFirstName;
         this.bidByLastName = bidByLastName;
-        this.bidByUserImg = bidByUserImg;
+        this.bidByUserImage = bidByUserImage;
         this.bidTime = bidTime;
     }
 
@@ -69,12 +69,12 @@ public class AllBidItem {
         this.bidByLastName = bidByLastName;
     }
 
-    public String getBidByUserImg() {
-        return bidByUserImg;
+    public String getBidByUserImage() {
+        return bidByUserImage;
     }
 
-    public void setBidByUserImg(String bidByUserImg) {
-        this.bidByUserImg = bidByUserImg;
+    public void setBidByUserImage(String bidByUserImage) {
+        this.bidByUserImage = bidByUserImage;
     }
 
     public String getBidTime() {
