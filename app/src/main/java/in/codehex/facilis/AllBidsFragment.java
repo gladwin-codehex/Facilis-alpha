@@ -22,6 +22,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,23 +38,22 @@ import java.util.Map;
 import in.codehex.facilis.app.AppController;
 import in.codehex.facilis.app.Config;
 import in.codehex.facilis.helper.DividerItemDecoration;
-import in.codehex.facilis.model.OrderedItem;
+import in.codehex.facilis.model.AllBidItem;
 
 
 /**
- * A fragment that is used to display ordered item list for the {@link CurrentOrdersFragment},
- * {@link SelectedOrdersFragment}, {@link ClosedOrdersFragment} class.
+ * A fragment that is used to display bid list for the {@link CurrentOrdersFragment} class.
  */
-public class OrderedItemsFragment extends Fragment {
+public class AllBidsFragment extends Fragment {
 
     RecyclerView mRecyclerView;
-    List<OrderedItem> mOrderedItemList;
-    OrderedItemsAdapter mAdapter;
+    List<AllBidItem> mAllBidItemList;
+    AllBidsAdapter mAdapter;
     SharedPreferences userPreferences;
     LinearLayoutManager mLayoutManager;
     int mOrderId;
 
-    public OrderedItemsFragment() {
+    public AllBidsFragment() {
         // Required empty public constructor
     }
 
@@ -62,7 +62,7 @@ public class OrderedItemsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_ordered_items, container, false);
+        View view = inflater.inflate(R.layout.fragment_all_bids, container, false);
 
         initObjects(view);
         prepareObjects();
@@ -76,11 +76,11 @@ public class OrderedItemsFragment extends Fragment {
      * @param view the root view of the layout.
      */
     private void initObjects(View view) {
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.ordered_item_list);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.all_bids_list);
 
-        mOrderedItemList = new ArrayList<>();
+        mAllBidItemList = new ArrayList<>();
         mLayoutManager = new LinearLayoutManager(getContext());
-        mAdapter = new OrderedItemsAdapter(getContext(), mOrderedItemList);
+        mAdapter = new AllBidsAdapter(getContext(), mAllBidItemList);
         userPreferences = getActivity().getSharedPreferences(Config.PREF_USER,
                 Context.MODE_PRIVATE);
     }
@@ -121,21 +121,30 @@ public class OrderedItemsFragment extends Fragment {
         }
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
-                Config.API_VIEW_ORDERED_ITEMS, new Response.Listener<String>() {
+                Config.API_ALL_BIDS, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                mOrderedItemList.clear();
+                mAllBidItemList.clear();
                 mAdapter.notifyDataSetChanged();
                 try {
-                    JSONArray jsonArray = new JSONArray(response);
+                    JSONObject bidsObjects = new JSONObject(response);
+                    JSONArray jsonArray = bidsObjects.getJSONArray(Config.KEY_API_BID_DETAILS);
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject object = jsonArray.getJSONObject(i);
                         int id = object.getInt(Config.KEY_API_ID);
-                        String name = object.getString(Config.KEY_API_NAME);
-                        String quantity = object.getString(Config.KEY_API_QUANTITY);
-                        String brand = object.getString(Config.KEY_API_BRAND);
-                        String desc = object.getString(Config.KEY_API_DESC);
-                        mOrderedItemList.add(new OrderedItem(id, name, quantity, brand, desc));
+                        int order = object.getInt(Config.KEY_API_ORDER);
+                        JSONObject bidByObject = object.getJSONObject(Config.KEY_API_BID_BY);
+                        int bidById = bidByObject.getInt(Config.KEY_API_ID);
+                        String bidByFirstName =
+                                bidByObject.getString(Config.KEY_API_FIRST_NAME);
+                        String bidByLastName =
+                                bidByObject.getString(Config.KEY_API_LAST_NAME);
+                        String bidByUserImage =
+                                bidByObject.getString(Config.KEY_API_USER_IMAGE);
+                        String bidTime = getBidDate(object.getString(Config.KEY_API_BID_TIME));
+                        int bidCost = object.getInt(Config.KEY_API_BID_COST);
+                        mAllBidItemList.add(new AllBidItem(id, order, bidById, bidCost,
+                                bidByFirstName, bidByLastName, bidByUserImage, bidTime));
                         mAdapter.notifyItemInserted(i);
                     }
                 } catch (JSONException e) {
@@ -196,72 +205,80 @@ public class OrderedItemsFragment extends Fragment {
             }
         };
 
-        AppController.getInstance().addToRequestQueue(stringRequest, "view_ordered_items");
+        AppController.getInstance().addToRequestQueue(stringRequest, "view_all_bids");
     }
 
     /**
      * Get the datetime string value and converts it to the format DD, MON YEAR.
      *
-     * @param postedDate the original string got from the server
+     * @param bidDate the original string got from the server
      * @return formatted date string
      */
-    private String getPostedDate(String postedDate) {
+    private String getBidDate(String bidDate) {
         try {
             Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",
-                    Locale.getDefault()).parse(postedDate);
+                    Locale.getDefault()).parse(bidDate);
             return String.format(Locale.getDefault(), "%td, %tb %tY", date, date, date);
         } catch (ParseException e) {
             Toast.makeText(getContext(), "Date parse error - " + e.getMessage(),
                     Toast.LENGTH_SHORT).show();
         }
-        return postedDate;
+        return bidDate;
     }
 
     /**
      * View adapter for the recycler view of the ordered item list.
      */
-    private class OrderedItemsAdapter
-            extends RecyclerView.Adapter<OrderedItemsAdapter.OrderedItemsHolder> {
+    private class AllBidsAdapter
+            extends RecyclerView.Adapter<AllBidsAdapter.AllBidsHolder> {
 
         Context context;
-        List<OrderedItem> mOrderedItemList;
+        List<AllBidItem> mAllBidItemList;
 
-        public OrderedItemsAdapter(Context context, List<OrderedItem> mOrderedItemList) {
+        public AllBidsAdapter(Context context, List<AllBidItem> mAllBidItemList) {
             this.context = context;
-            this.mOrderedItemList = mOrderedItemList;
+            this.mAllBidItemList = mAllBidItemList;
         }
 
         @Override
-        public OrderedItemsHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public AllBidsHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_ordered, parent, false);
-            return new OrderedItemsHolder(view);
+                    .inflate(R.layout.item_all_bids, parent, false);
+            return new AllBidsHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(OrderedItemsHolder holder, int position) {
-            OrderedItem orderedItem = mOrderedItemList.get(position);
-            holder.textName.setText(orderedItem.getName());
-            holder.textBrand.setText(orderedItem.getBrand());
-            holder.textDesc.setText(orderedItem.getDescription());
-            holder.textQuantity.setText(orderedItem.getQuantity());
+        public void onBindViewHolder(AllBidsHolder holder, int position) {
+            AllBidItem allBidItem = mAllBidItemList.get(position);
+            holder.textName.setText(getString(R.string.text_name,
+                    allBidItem.getBidByFirstName(), allBidItem.getBidByLastName()));
+            holder.textBidAmount.setText(getString(R.string.text_bid_amount,
+                    allBidItem.getBidCost()));
+            holder.textBidDate.setText(allBidItem.getBidTime());
+            holder.btnAcceptBid.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO: call accept bid api
+                }
+            });
         }
 
         @Override
         public int getItemCount() {
-            return mOrderedItemList.size();
+            return mAllBidItemList.size();
         }
 
-        protected class OrderedItemsHolder extends RecyclerView.ViewHolder {
+        protected class AllBidsHolder extends RecyclerView.ViewHolder {
 
-            private TextView textName, textBrand, textDesc, textQuantity;
+            private TextView textName, textBidAmount, textBidDate;
+            private Button btnAcceptBid;
 
-            public OrderedItemsHolder(View view) {
+            public AllBidsHolder(View view) {
                 super(view);
                 textName = (TextView) view.findViewById(R.id.text_name);
-                textBrand = (TextView) view.findViewById(R.id.text_brand);
-                textDesc = (TextView) view.findViewById(R.id.text_desc);
-                textQuantity = (TextView) view.findViewById(R.id.text_quantity);
+                textBidAmount = (TextView) view.findViewById(R.id.text_bid_amount);
+                textBidDate = (TextView) view.findViewById(R.id.text_bid_date);
+                btnAcceptBid = (Button) view.findViewById(R.id.btn_acccept_bid);
             }
         }
     }
