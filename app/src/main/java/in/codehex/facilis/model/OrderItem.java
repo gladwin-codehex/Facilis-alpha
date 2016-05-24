@@ -5,24 +5,33 @@ package in.codehex.facilis.model;
  */
 public class OrderItem {
 
-    private int id, orderId, postedById, leastCost, average, counter;
-    private String postedByFirstName, postedByLastName, postedDate, days, userImg;
+    private int id, orderId, postedById, rating, creditPeriod, itemCount,
+            previousRecord, colorIndicator, statusColor;
+    private String postedByFirstName, postedByLastName, postedByUserImage,
+            postedDate, biddingDuration, creditStatus;
+    private boolean creditFacility;
 
-    public OrderItem(int id, int orderId, int postedById,
-                     int leastCost, int average, int counter,
-                     String postedByFirstName, String postedByLastName,
-                     String postedDate, String days, String userImg) {
+    public OrderItem(int id, int orderId, int postedById, int rating, int creditPeriod,
+                     int itemCount, int previousRecord, int colorIndicator, int statusColor,
+                     String postedByFirstName, String postedByLastName, String postedByUserImage,
+                     String postedDate, String biddingDuration, String creditStatus,
+                     boolean creditFacility) {
         this.id = id;
         this.orderId = orderId;
         this.postedById = postedById;
-        this.leastCost = leastCost;
-        this.average = average;
-        this.counter = counter;
+        this.rating = rating;
+        this.creditPeriod = creditPeriod;
+        this.itemCount = itemCount;
+        this.previousRecord = previousRecord;
+        this.colorIndicator = colorIndicator;
+        this.statusColor = statusColor;
         this.postedByFirstName = postedByFirstName;
         this.postedByLastName = postedByLastName;
+        this.postedByUserImage = postedByUserImage;
         this.postedDate = postedDate;
-        this.days = days;
-        this.userImg = userImg;
+        this.biddingDuration = biddingDuration;
+        this.creditStatus = creditStatus;
+        this.creditFacility = creditFacility;
     }
 
     public int getId() {
@@ -49,28 +58,52 @@ public class OrderItem {
         this.postedById = postedById;
     }
 
-    public int getLeastCost() {
-        return leastCost;
+    public int getRating() {
+        return rating;
     }
 
-    public void setLeastCost(int leastCost) {
-        this.leastCost = leastCost;
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 
-    public int getAverage() {
-        return average;
+    public int getCreditPeriod() {
+        return creditPeriod;
     }
 
-    public void setAverage(int average) {
-        this.average = average;
+    public void setCreditPeriod(int creditPeriod) {
+        this.creditPeriod = creditPeriod;
     }
 
-    public int getCounter() {
-        return counter;
+    public int getItemCount() {
+        return itemCount;
     }
 
-    public void setCounter(int counter) {
-        this.counter = counter;
+    public void setItemCount(int itemCount) {
+        this.itemCount = itemCount;
+    }
+
+    public int getPreviousRecord() {
+        return previousRecord;
+    }
+
+    public void setPreviousRecord(int previousRecord) {
+        this.previousRecord = previousRecord;
+    }
+
+    public int getColorIndicator() {
+        return colorIndicator;
+    }
+
+    public void setColorIndicator(int colorIndicator) {
+        this.colorIndicator = colorIndicator;
+    }
+
+    public int getStatusColor() {
+        return statusColor;
+    }
+
+    public void setStatusColor(int statusColor) {
+        this.statusColor = statusColor;
     }
 
     public String getPostedByFirstName() {
@@ -89,6 +122,14 @@ public class OrderItem {
         this.postedByLastName = postedByLastName;
     }
 
+    public String getPostedByUserImage() {
+        return postedByUserImage;
+    }
+
+    public void setPostedByUserImage(String postedByUserImage) {
+        this.postedByUserImage = postedByUserImage;
+    }
+
     public String getPostedDate() {
         return postedDate;
     }
@@ -97,19 +138,27 @@ public class OrderItem {
         this.postedDate = postedDate;
     }
 
-    public String getDays() {
-        return days;
+    public String getBiddingDuration() {
+        return biddingDuration;
     }
 
-    public void setDays(String days) {
-        this.days = days;
+    public void setBiddingDuration(String biddingDuration) {
+        this.biddingDuration = biddingDuration;
     }
 
-    public String getUserImg() {
-        return userImg;
+    public String getCreditStatus() {
+        return creditStatus;
     }
 
-    public void setUserImg(String userImg) {
-        this.userImg = userImg;
+    public void setCreditStatus(String creditStatus) {
+        this.creditStatus = creditStatus;
+    }
+
+    public boolean isCreditFacility() {
+        return creditFacility;
+    }
+
+    public void setCreditFacility(boolean creditFacility) {
+        this.creditFacility = creditFacility;
     }
 }

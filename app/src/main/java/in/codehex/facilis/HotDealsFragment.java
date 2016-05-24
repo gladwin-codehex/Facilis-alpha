@@ -24,18 +24,23 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import in.codehex.facilis.app.AppController;
 import in.codehex.facilis.app.Config;
-import in.codehex.facilis.app.ItemClickListener;
 import in.codehex.facilis.helper.CircleTransform;
 import in.codehex.facilis.model.OrderItem;
 
@@ -158,9 +163,11 @@ public class HotDealsFragment extends Fragment {
     private void processOrders() {
         final JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put(Config.KEY_API_DEAL_TYPE, "hot_deals");
+            jsonObject.put(Config.KEY_API_USER, userPreferences.getInt(Config.KEY_PREF_USER_ID, 0));
             jsonObject.put(Config.KEY_API_START, mCount);
             jsonObject.put(Config.KEY_API_END, mCount + 10);
+            jsonObject.put(Config.KEY_API_FILTER_BY, "hot_deals");
+            jsonObject.put(Config.KEY_API_FILTER_QUERY, "");
         } catch (JSONException e) {
             // TODO: remove toast
             Toast.makeText(getContext(),
@@ -169,7 +176,7 @@ public class HotDealsFragment extends Fragment {
         }
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
-                Config.API_HOME_PAGE_DEALS, new Response.Listener<String>() {
+                Config.API_VIEW_ORDERS, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 if (mCount == 0) {
@@ -178,10 +185,8 @@ public class HotDealsFragment extends Fragment {
                 }
                 mRefreshLayout.setRefreshing(false);
                 try {
-                    JSONArray jsonArray = new JSONArray(response);
-                    if (jsonArray.length() < 10)
-                        isEnded = true;
-
+                    JSONObject responseObject = new JSONObject(response);
+                    JSONArray jsonArray = responseObject.getJSONArray(Config.KEY_API_VIEW_ORDERS);
                     if (!isEnded) {
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject object = jsonArray.getJSONObject(i);
@@ -195,20 +200,48 @@ public class HotDealsFragment extends Fragment {
                                     .getString(Config.KEY_API_POSTED_BY_FIRST_NAME);
                             String postedByLastName = postedByObject
                                     .getString(Config.KEY_API_POSTED_BY_LAST_NAME);
-                            String postedDate = object.getString(Config.KEY_API_POSTED_DATE);
-                            String days = object.getString(Config.KEY_API_DAYS);
-                            int leastCost = object.getInt(Config.KEY_API_LEAST_COST);
-                            int average = object.getInt(Config.KEY_API_AVERAGE);
-                            int counter = object.getInt(Config.KEY_API_COUNTER);
-                            String userImg = object.getString(Config.KEY_API_USER_IMAGE);
-                            mOrderItemList.add(mCount + i, new OrderItem(id, orderId,
-                                    postedById, leastCost, average, counter,
-                                    postedByFirstName, postedByLastName,
-                                    postedDate, days, userImg));
+                            String postedByUserImage =
+                                    postedByObject.getString(Config.KEY_API_USER_IMAGE);
+                            String postedDate =
+                                    getPostedDate(object.getString(Config.KEY_API_POSTED_DATE));
+                            int rating = object.getInt(Config.KEY_API_RATING);
+                            boolean creditFacility =
+                                    object.getBoolean(Config.KEY_API_CREDIT_FACILITY);
+                            int creditPeriod = object.getInt(Config.KEY_API_CREDIT_PERIOD);
+                            String biddingDuration =
+                                    object.getString(Config.KEY_API_BIDDING_DURATION);
+                            int itemCount = object.getInt(Config.KEY_API_ITEM_COUNT);
+                            int previousRecord = object.getInt(Config.KEY_API_PREVIOUS_RECORD);
+                            int colorIndicator = object.getInt(Config.KEY_API_COLOR_INDICATOR);
+                            int statusColor;
+                            switch (colorIndicator) {
+                                case 0:
+                                    statusColor = R.color.status_red;
+                                    break;
+                                case 1:
+                                    statusColor = R.color.status_yellow;
+                                    break;
+                                case 2:
+                                    statusColor = R.color.status_green;
+                                    break;
+                                default:
+                                    statusColor = R.color.primary;
+                            }
+                            String creditStatus;
+                            if (creditFacility)
+                                creditStatus = "Credit";
+                            else creditStatus = "No Credit";
+                            mOrderItemList.add(new OrderItem(id, orderId, postedById, rating,
+                                    creditPeriod, itemCount, previousRecord, colorIndicator,
+                                    statusColor, postedByFirstName, postedByLastName,
+                                    postedByUserImage, postedDate, biddingDuration,
+                                    creditStatus, creditFacility));
                             mAdapter.notifyItemInserted(mCount + i);
                         }
                         mCount = mCount + 10;
                     }
+                    if (jsonArray.length() < 10)
+                        isEnded = true;
                 } catch (JSONException e) {
                     // TODO: remove toast
                     Toast.makeText(getContext(),
@@ -273,6 +306,24 @@ public class HotDealsFragment extends Fragment {
     }
 
     /**
+     * Get the datetime string value and converts it to the format DD, MON YEAR.
+     *
+     * @param postedDate the original string got from the server
+     * @return formatted date string
+     */
+    private String getPostedDate(String postedDate) {
+        try {
+            Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",
+                    Locale.getDefault()).parse(postedDate);
+            return String.format(Locale.getDefault(), "%td, %tb %tY", date, date, date);
+        } catch (ParseException e) {
+            Toast.makeText(getContext(), "Date parse error - " + e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+        return postedDate;
+    }
+
+    /**
      * View adapter for the recycler view of the view orders list item.
      */
     private class ViewOrdersAdapter
@@ -296,25 +347,34 @@ public class HotDealsFragment extends Fragment {
         @Override
         public void onBindViewHolder(ViewOrdersHolder holder, int position) {
             final OrderItem orderItem = mOrderItemList.get(position);
-            String name = orderItem.getPostedByFirstName() + " "
-                    + orderItem.getPostedByLastName();
-            String dp = orderItem.getUserImg();
-            String duration = String.valueOf(orderItem.getDays()) + " left";
-            String posted = String.valueOf(orderItem.getPostedDate());
-            String item = String.valueOf(orderItem.getCounter()) + " items";
-            holder.textName.setText(name);
-            Glide.with(context).load(dp)
+            holder.viewOrderStatus.setBackgroundResource(orderItem.getStatusColor());
+            holder.textName.setText(getString(R.string.text_name,
+                    orderItem.getPostedByFirstName(), orderItem.getPostedByLastName()));
+            holder.textDuration.setText(orderItem.getBiddingDuration());
+            holder.textPosted.setText(orderItem.getPostedDate());
+            holder.ratingBuyer.setRating((float) orderItem.getRating());
+            holder.textPreviousRecords.setText(getString(R.string.text_previous_records,
+                    orderItem.getPreviousRecord()));
+            holder.textPayment.setText(getString(R.string.text_payment,
+                    orderItem.getCreditPeriod(), orderItem.getCreditStatus()));
+            holder.textTotalItems.setText(getString(R.string.text_total_items,
+                    orderItem.getItemCount()));
+
+            Glide.with(context).load(orderItem.getPostedByUserImage())
                     .placeholder(R.drawable.ic_person_gray)
                     .transform(new CircleTransform(context)).into(holder.imgDp);
-            holder.textDuration.setText(duration);
-            holder.textPosted.setText(posted);
-            holder.textItem.setText(item);
 
-            holder.setClickListener(new ItemClickListener() {
+            holder.btnViewItems.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view, int position, boolean isLongClick) {
-                    ((SellerActivity) getActivity()).showOrderItems(Config.KEY_FRAGMENT_HOT_DEALS,
-                            orderItem.getOrderId());
+                public void onClick(View v) {
+                    // TODO: handle button click events
+                }
+            });
+
+            holder.btnPlaceBid.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO: handle button click events
                 }
             });
         }
@@ -324,30 +384,28 @@ public class HotDealsFragment extends Fragment {
             return mOrderItemList.size();
         }
 
-        protected class ViewOrdersHolder extends RecyclerView.ViewHolder
-                implements View.OnClickListener {
+        protected class ViewOrdersHolder extends RecyclerView.ViewHolder {
 
-            private TextView textName, textDuration, textPosted, textItem;
+            private View viewOrderStatus;
+            private TextView textName, textDuration, textPosted, textPreviousRecords,
+                    textPayment, textTotalItems;
+            private RatingBar ratingBuyer;
             private ImageView imgDp;
-            private ItemClickListener itemClickListener;
+            private Button btnViewItems, btnPlaceBid;
 
             public ViewOrdersHolder(View view) {
                 super(view);
+                viewOrderStatus = view.findViewById(R.id.view_order_status);
                 textName = (TextView) view.findViewById(R.id.text_name);
                 textDuration = (TextView) view.findViewById(R.id.text_duration);
                 textPosted = (TextView) view.findViewById(R.id.text_posted);
-                textItem = (TextView) view.findViewById(R.id.text_item);
+                textPreviousRecords = (TextView) view.findViewById(R.id.text_previous_records);
+                textPayment = (TextView) view.findViewById(R.id.text_payment);
+                textTotalItems = (TextView) view.findViewById(R.id.text_total_items);
+                ratingBuyer = (RatingBar) view.findViewById(R.id.rating_buyer);
+                btnViewItems = (Button) view.findViewById(R.id.btn_view_items);
+                btnPlaceBid = (Button) view.findViewById(R.id.btn_place_bid);
                 imgDp = (ImageView) view.findViewById(R.id.img_dp);
-                view.setOnClickListener(this);
-            }
-
-            public void setClickListener(ItemClickListener itemClickListener) {
-                this.itemClickListener = itemClickListener;
-            }
-
-            @Override
-            public void onClick(View view) {
-                itemClickListener.onClick(view, getAdapterPosition(), false);
             }
         }
     }

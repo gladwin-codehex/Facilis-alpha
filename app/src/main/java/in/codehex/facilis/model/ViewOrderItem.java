@@ -5,21 +5,28 @@ package in.codehex.facilis.model;
  */
 public class ViewOrderItem {
 
-    private int id, orderId, delCharge;
-    private String name, quantity, brand, description;
-    private double percentage;
+    private int id, orderId, postedById, rating, creditPeriod, itemCount, previousRecord, colorIndicator;
+    private String postedByFirstName, postedByLastName, postedByUserImage, postedDate, biddingDuration;
+    private boolean creditFacility;
 
-    public ViewOrderItem(int id, int orderId, int delCharge,
-                         String name, String quantity, String brand,
-                         String description, double percentage) {
+    public ViewOrderItem(int id, int orderId, int postedById, int rating, int creditPeriod, int itemCount,
+                         int previousRecord, int colorIndicator, String postedByFirstName,
+                         String postedByLastName, String postedByUserImage, String postedDate,
+                         String biddingDuration, boolean creditFacility) {
         this.id = id;
         this.orderId = orderId;
-        this.delCharge = delCharge;
-        this.name = name;
-        this.quantity = quantity;
-        this.brand = brand;
-        this.description = description;
-        this.percentage = percentage;
+        this.postedById = postedById;
+        this.rating = rating;
+        this.creditPeriod = creditPeriod;
+        this.itemCount = itemCount;
+        this.previousRecord = previousRecord;
+        this.colorIndicator = colorIndicator;
+        this.postedByFirstName = postedByFirstName;
+        this.postedByLastName = postedByLastName;
+        this.postedByUserImage = postedByUserImage;
+        this.postedDate = postedDate;
+        this.biddingDuration = biddingDuration;
+        this.creditFacility = creditFacility;
     }
 
     public int getId() {
@@ -38,51 +45,99 @@ public class ViewOrderItem {
         this.orderId = orderId;
     }
 
-    public int getDelCharge() {
-        return delCharge;
+    public int getPostedById() {
+        return postedById;
     }
 
-    public void setDelCharge(int delCharge) {
-        this.delCharge = delCharge;
+    public void setPostedById(int postedById) {
+        this.postedById = postedById;
     }
 
-    public String getName() {
-        return name;
+    public int getRating() {
+        return rating;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 
-    public String getQuantity() {
-        return quantity;
+    public int getCreditPeriod() {
+        return creditPeriod;
     }
 
-    public void setQuantity(String quantity) {
-        this.quantity = quantity;
+    public void setCreditPeriod(int creditPeriod) {
+        this.creditPeriod = creditPeriod;
     }
 
-    public String getBrand() {
-        return brand;
+    public int getItemCount() {
+        return itemCount;
     }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
+    public void setItemCount(int itemCount) {
+        this.itemCount = itemCount;
     }
 
-    public String getDescription() {
-        return description;
+    public int getPreviousRecord() {
+        return previousRecord;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setPreviousRecord(int previousRecord) {
+        this.previousRecord = previousRecord;
     }
 
-    public double getPercentage() {
-        return percentage;
+    public int getColorIndicator() {
+        return colorIndicator;
     }
 
-    public void setPercentage(double percentage) {
-        this.percentage = percentage;
+    public void setColorIndicator(int colorIndicator) {
+        this.colorIndicator = colorIndicator;
+    }
+
+    public String getPostedByFirstName() {
+        return postedByFirstName;
+    }
+
+    public void setPostedByFirstName(String postedByFirstName) {
+        this.postedByFirstName = postedByFirstName;
+    }
+
+    public String getPostedByLastName() {
+        return postedByLastName;
+    }
+
+    public void setPostedByLastName(String postedByLastName) {
+        this.postedByLastName = postedByLastName;
+    }
+
+    public String getPostedByUserImage() {
+        return postedByUserImage;
+    }
+
+    public void setPostedByUserImage(String postedByUserImage) {
+        this.postedByUserImage = postedByUserImage;
+    }
+
+    public String getPostedDate() {
+        return postedDate;
+    }
+
+    public void setPostedDate(String postedDate) {
+        this.postedDate = postedDate;
+    }
+
+    public String getBiddingDuration() {
+        return biddingDuration;
+    }
+
+    public void setBiddingDuration(String biddingDuration) {
+        this.biddingDuration = biddingDuration;
+    }
+
+    public boolean isCreditFacility() {
+        return creditFacility;
+    }
+
+    public void setCreditFacility(boolean creditFacility) {
+        this.creditFacility = creditFacility;
     }
 }

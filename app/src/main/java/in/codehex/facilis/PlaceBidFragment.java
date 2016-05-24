@@ -133,9 +133,9 @@ public class PlaceBidFragment extends Fragment {
                             description = "-";
                         int delCharge = object.getInt(Config.KEY_API_DEL_CHARGE);
                         double percentage = object.getDouble(Config.KEY_API_PERCENTAGE);
-                        mViewOrderItemList.add(new ViewOrderItem(id, order,
+                 /*       mViewOrderItemList.add(new ViewOrderItem(id, order,
                                 delCharge, name, quantity, brand, description, percentage));
-                        mAdapter.notifyDataSetChanged();
+                        mAdapter.notifyDataSetChanged(); */
                     }
                 } catch (JSONException e) {
                     // TODO: remove toast
@@ -222,13 +222,13 @@ public class PlaceBidFragment extends Fragment {
         @Override
         public void onBindViewHolder(ViewOrderItemsHolder holder, int position) {
             ViewOrderItem viewOrderItem = mViewOrderItemList.get(position);
-            String name = viewOrderItem.getName() + " - " + viewOrderItem.getBrand();
-            String quantity = "Quantity: " + viewOrderItem.getQuantity();
-            String description = "Description: " + viewOrderItem.getDescription();
+         //   String name = viewOrderItem.getName() + " - " + viewOrderItem.getBrand();
+       //     String quantity = "Quantity: " + viewOrderItem.getQuantity();
+       //     String description = "Description: " + viewOrderItem.getDescription();
 
-            holder.textName.setText(name);
-            holder.textDescription.setText(description);
-            holder.textQuantity.setText(quantity);
+        //    holder.textName.setText(name);
+       //     holder.textDescription.setText(description);
+       //     holder.textQuantity.setText(quantity);
         }
 
         @Override
