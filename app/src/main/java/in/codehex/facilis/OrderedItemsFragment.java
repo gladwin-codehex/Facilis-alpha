@@ -39,7 +39,8 @@ import in.codehex.facilis.model.OrderedItem;
 
 /**
  * A fragment that is used to display ordered item list for the {@link CurrentOrdersFragment},
- * {@link SelectedOrdersFragment}, {@link ClosedOrdersFragment} class.
+ * {@link SelectedOrdersFragment}, {@link ClosedOrdersFragment},{@link ViewOrdersFragment},
+ * {@link ActiveBidsFragment}, {@link SelectedBidsFragment}, {@link ClosedBidsFragment} class.
  */
 public class OrderedItemsFragment extends Fragment {
 

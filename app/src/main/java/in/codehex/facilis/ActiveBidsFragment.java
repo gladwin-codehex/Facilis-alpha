@@ -24,20 +24,25 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import in.codehex.facilis.app.AppController;
 import in.codehex.facilis.app.Config;
-import in.codehex.facilis.app.ItemClickListener;
 import in.codehex.facilis.helper.CircleTransform;
-import in.codehex.facilis.model.BidItem;
+import in.codehex.facilis.model.ActiveBidItem;
 
 
 /**
@@ -47,7 +52,7 @@ public class ActiveBidsFragment extends Fragment {
 
     SwipeRefreshLayout mRefreshLayout;
     RecyclerView mRecyclerView;
-    List<BidItem> mBidItemList;
+    List<ActiveBidItem> mActiveBidItemList;
     ActiveBidsAdapter mAdapter;
     SharedPreferences userPreferences;
     LinearLayoutManager mLayoutManager;
@@ -84,9 +89,9 @@ public class ActiveBidsFragment extends Fragment {
         mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.active_bid_list);
 
-        mBidItemList = new ArrayList<>();
+        mActiveBidItemList = new ArrayList<>();
         mLayoutManager = new LinearLayoutManager(getContext());
-        mAdapter = new ActiveBidsAdapter(getContext(), mBidItemList);
+        mAdapter = new ActiveBidsAdapter(getContext(), mActiveBidItemList);
         userPreferences = getActivity().getSharedPreferences(Config.PREF_USER,
                 Context.MODE_PRIVATE);
     }
@@ -158,10 +163,11 @@ public class ActiveBidsFragment extends Fragment {
     private void processBids() {
         final JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put(Config.KEY_API_KEY, "active_bids");
             jsonObject.put(Config.KEY_API_USER, userPreferences.getInt(Config.KEY_PREF_USER_ID, 0));
             jsonObject.put(Config.KEY_API_START, mCount);
             jsonObject.put(Config.KEY_API_END, mCount + 10);
+            jsonObject.put(Config.KEY_API_FILTER_BY, "");
+            jsonObject.put(Config.KEY_API_FILTER_QUERY, "");
         } catch (JSONException e) {
             // TODO: remove toast
             Toast.makeText(getContext(),
@@ -170,23 +176,22 @@ public class ActiveBidsFragment extends Fragment {
         }
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
-                Config.API_VIEW_ORDERS, new Response.Listener<String>() {
+                Config.API_ACTIVE_BIDS, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 if (mCount == 0) {
-                    mBidItemList.clear();
+                    mActiveBidItemList.clear();
                     mAdapter.notifyDataSetChanged();
                 }
                 mRefreshLayout.setRefreshing(false);
                 try {
-                    JSONArray jsonArray = new JSONArray(response);
-                    if (jsonArray.length() < 10)
-                        isEnded = true;
-
+                    JSONObject responseObject = new JSONObject(response);
+                    JSONArray jsonArray = responseObject.getJSONArray(Config.KEY_API_ACTIVE_BIDS);
                     if (!isEnded) {
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject object = jsonArray.getJSONObject(i);
                             int id = object.getInt(Config.KEY_API_ID);
+                            int bidCost = object.getInt(Config.KEY_API_BID_COST);
                             JSONObject orderObject = object.getJSONObject(Config.KEY_API_ORDER);
                             int orderId = orderObject.getInt(Config.KEY_API_ID);
                             int orderOrderId = orderObject.getInt(Config.KEY_API_ORDER_ID);
@@ -198,20 +203,46 @@ public class ActiveBidsFragment extends Fragment {
                                     .getString(Config.KEY_API_POSTED_BY_FIRST_NAME);
                             String postedByLastName = postedByObject
                                     .getString(Config.KEY_API_POSTED_BY_LAST_NAME);
-                            String biddingTime = orderObject.getString(Config.KEY_API_BIDDING_TIME);
-                            String days = object.getString(Config.KEY_API_DAYS);
-                            int bidCost = object.getInt(Config.KEY_API_BID_COST);
-                            boolean bidStatus = object.getBoolean(Config.KEY_API_BID_STATUS);
-                            String postedDate = object.getString(Config.KEY_API_POSTED_DATE);
-                            String userImg = object.getString(Config.KEY_API_USER_IMAGE);
-                            mBidItemList.add(mCount + i, new BidItem(id, orderId,
-                                    orderOrderId, postedById, bidCost, postedByFirstName,
-                                    postedByLastName, biddingTime, days, postedDate,
-                                    userImg, bidStatus));
+                            String postedByUserImage =
+                                    postedByObject.getString(Config.KEY_API_USER_IMAGE);
+                            String postedDate =
+                                    getPostedDate(orderObject.getString(Config.KEY_API_POSTED_DATE));
+                            int orderRating = orderObject.getInt(Config.KEY_API_RATING);
+                            boolean creditFacility =
+                                    orderObject.getBoolean(Config.KEY_API_CREDIT_FACILITY);
+                            int orderCreditPeriod = orderObject.getInt(Config.KEY_API_CREDIT_PERIOD);
+                            int orderItemCount = orderObject.getInt(Config.KEY_API_ITEM_COUNT);
+                            int orderPreviousRecord = orderObject.getInt(Config.KEY_API_PREVIOUS_RECORD);
+                            int orderColorIndicator = orderObject.getInt(Config.KEY_API_COLOR_INDICATOR);
+                            int statusColor;
+                            switch (orderColorIndicator) {
+                                case 0:
+                                    statusColor = R.color.status_red;
+                                    break;
+                                case 1:
+                                    statusColor = R.color.status_yellow;
+                                    break;
+                                case 2:
+                                    statusColor = R.color.status_green;
+                                    break;
+                                default:
+                                    statusColor = R.color.primary;
+                            }
+                            String creditStatus;
+                            if (creditFacility)
+                                creditStatus = "Credit";
+                            else creditStatus = "No Credit";
+                            mActiveBidItemList.add(new ActiveBidItem(id, bidCost, orderId,
+                                    orderOrderId, postedById, orderRating, orderCreditPeriod,
+                                    orderPreviousRecord, orderItemCount, orderColorIndicator,
+                                    statusColor, postedByFirstName, postedByLastName,
+                                    postedByUserImage, postedDate, creditStatus, creditFacility));
                             mAdapter.notifyItemInserted(mCount + i);
                         }
                         mCount = mCount + 10;
                     }
+                    if (jsonArray.length() < 10)
+                        isEnded = true;
                 } catch (JSONException e) {
                     // TODO: remove toast
                     Toast.makeText(getContext(),
@@ -276,82 +307,100 @@ public class ActiveBidsFragment extends Fragment {
     }
 
     /**
+     * Get the datetime string value and converts it to the format DD, MON YEAR.
+     *
+     * @param postedDate the original string got from the server
+     * @return formatted date string
+     */
+    private String getPostedDate(String postedDate) {
+        try {
+            Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",
+                    Locale.getDefault()).parse(postedDate);
+            return String.format(Locale.getDefault(), "%td, %tb %tY", date, date, date);
+        } catch (ParseException e) {
+            Toast.makeText(getContext(), "Date parse error - " + e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+        return postedDate;
+    }
+
+    /**
      * View adapter for the recycler view of the active bids list item.
      */
     private class ActiveBidsAdapter
             extends RecyclerView.Adapter<ActiveBidsAdapter.ActiveBidsHolder> {
 
         Context context;
-        List<BidItem> mBidItemList;
+        List<ActiveBidItem> mActiveBidItemList;
 
-        public ActiveBidsAdapter(Context context, List<BidItem> mBidItemList) {
+        public ActiveBidsAdapter(Context context, List<ActiveBidItem> mActiveBidItemList) {
             this.context = context;
-            this.mBidItemList = mBidItemList;
+            this.mActiveBidItemList = mActiveBidItemList;
         }
 
         @Override
         public ActiveBidsHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_bid, parent, false);
+                    .inflate(R.layout.item_active_bids, parent, false);
             return new ActiveBidsHolder(view);
         }
 
         @Override
         public void onBindViewHolder(ActiveBidsHolder holder, int position) {
-            final BidItem bidItem = mBidItemList.get(position);
-            String name = bidItem.getPostedByFirstName() + " "
-                    + bidItem.getPostedByLastName();
-            String dp = bidItem.getUserImg();
-            String duration = String.valueOf(bidItem.getDays()) + " left";
-            String posted = bidItem.getPostedDate();
-            String amount = "\u20B9 " + String.valueOf(bidItem.getBidCost());
+            final ActiveBidItem activeBidItem = mActiveBidItemList.get(position);
+            holder.viewOrderStatus.setBackgroundResource(activeBidItem.getStatusColor());
+            holder.textName.setText(getString(R.string.text_name,
+                    activeBidItem.getPostedByFirstName(), activeBidItem.getPostedByLastName()));
+            holder.textBidAmount.setText(getString(R.string.text_bid_amount,
+                    activeBidItem.getBidCost()));
+            holder.textPosted.setText(activeBidItem.getOrderPostedDate());
+            holder.ratingBuyer.setRating((float) activeBidItem.getOrderRating());
+            holder.textPreviousRecords.setText(getString(R.string.text_previous_records,
+                    activeBidItem.getOrderPreviousRecord()));
+            holder.textPayment.setText(getString(R.string.text_payment,
+                    activeBidItem.getOrderCreditPeriod(), activeBidItem.getCreditStatus()));
+            holder.textTotalItems.setText(getString(R.string.text_total_items,
+                    activeBidItem.getOrderItemCount()));
 
-            holder.textName.setText(name);
-            Glide.with(context).load(dp)
+            Glide.with(context).load(activeBidItem.getPostedByUserImage())
                     .placeholder(R.drawable.ic_person_gray)
                     .transform(new CircleTransform(context)).into(holder.imgDp);
-            holder.textDuration.setText(duration);
-            holder.textPosted.setText(posted);
-            holder.textAmount.setText(amount);
 
-            holder.setClickListener(new ItemClickListener() {
+            holder.btnViewItems.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view, int position, boolean isLongClick) {
-                    ((SellerActivity) getActivity()).showBidItems(Config.KEY_FRAGMENT_PREVIOUS,
-                            bidItem.getOrderId(), bidItem.getId());
+                public void onClick(View v) {
+                    ((SellerActivity) getActivity()).showOrderedItems(Config.KEY_FRAGMENT_ACTIVE,
+                            activeBidItem.getOrderId());
                 }
             });
         }
 
         @Override
         public int getItemCount() {
-            return mBidItemList.size();
+            return mActiveBidItemList.size();
         }
 
-        protected class ActiveBidsHolder extends RecyclerView.ViewHolder
-                implements View.OnClickListener {
+        protected class ActiveBidsHolder extends RecyclerView.ViewHolder {
 
-            private TextView textName, textDuration, textPosted, textAmount;
+            private View viewOrderStatus;
+            private TextView textName, textBidAmount, textPosted, textPreviousRecords,
+                    textPayment, textTotalItems;
+            private RatingBar ratingBuyer;
             private ImageView imgDp;
-            private ItemClickListener itemClickListener;
+            private Button btnViewItems;
 
             public ActiveBidsHolder(View view) {
                 super(view);
+                viewOrderStatus = view.findViewById(R.id.view_order_status);
                 textName = (TextView) view.findViewById(R.id.text_name);
-                textDuration = (TextView) view.findViewById(R.id.text_duration);
+                textBidAmount = (TextView) view.findViewById(R.id.text_bid_amount);
                 textPosted = (TextView) view.findViewById(R.id.text_posted);
-                textAmount = (TextView) view.findViewById(R.id.text_amount);
+                textPreviousRecords = (TextView) view.findViewById(R.id.text_previous_records);
+                textPayment = (TextView) view.findViewById(R.id.text_payment);
+                textTotalItems = (TextView) view.findViewById(R.id.text_total_items);
+                ratingBuyer = (RatingBar) view.findViewById(R.id.rating_buyer);
+                btnViewItems = (Button) view.findViewById(R.id.btn_view_items);
                 imgDp = (ImageView) view.findViewById(R.id.img_dp);
-                view.setOnClickListener(this);
-            }
-
-            public void setClickListener(ItemClickListener itemClickListener) {
-                this.itemClickListener = itemClickListener;
-            }
-
-            @Override
-            public void onClick(View view) {
-                itemClickListener.onClick(view, getAdapterPosition(), false);
             }
         }
     }

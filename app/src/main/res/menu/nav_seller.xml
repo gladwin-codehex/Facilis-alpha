@@ -10,11 +10,11 @@
             android:id="@+id/active_bids"
             android:title="@string/menu_active_bids" />
         <item
-            android:id="@+id/previous_bids"
-            android:title="@string/menu_previous_bids" />
+            android:id="@+id/selected_bids"
+            android:title="@string/menu_selected_bids" />
         <item
-            android:id="@+id/successful_bids"
-            android:title="@string/menu_successful_bids" />
+            android:id="@+id/closed_orders"
+            android:title="@string/menu_closed_orders" />
         <item
             android:id="@+id/about_us"
             android:title="@string/menu_about_us" />

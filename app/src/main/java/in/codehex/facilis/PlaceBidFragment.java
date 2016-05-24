@@ -215,7 +215,7 @@ public class PlaceBidFragment extends Fragment {
         @Override
         public ViewOrderItemsHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_view_order, parent, false);
+                    .inflate(R.layout.item_ordered, parent, false);
             return new ViewOrderItemsHolder(view);
         }
 
@@ -243,7 +243,7 @@ public class PlaceBidFragment extends Fragment {
             public ViewOrderItemsHolder(View view) {
                 super(view);
                 textName = (TextView) view.findViewById(R.id.text_name);
-                textDescription = (TextView) view.findViewById(R.id.text_description);
+                textDescription = (TextView) view.findViewById(R.id.text_desc);
                 textQuantity = (TextView) view.findViewById(R.id.text_quantity);
             }
         }

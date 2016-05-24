@@ -340,7 +340,7 @@ public class HotDealsFragment extends Fragment {
         @Override
         public ViewOrdersHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_order, parent, false);
+                    .inflate(R.layout.item_view_orders, parent, false);
             return new ViewOrdersHolder(view);
         }
 
@@ -367,7 +367,8 @@ public class HotDealsFragment extends Fragment {
             holder.btnViewItems.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // TODO: handle button click events
+                    ((SellerActivity) getActivity()).showOrderedItems(Config.KEY_FRAGMENT_HOT_DEALS,
+                            orderItem.getId());
                 }
             });
 
