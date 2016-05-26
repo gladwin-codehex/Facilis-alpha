@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/primary_margin"
+        android:layout_marginLeft="@dimen/primary_margin"
+        android:layout_marginRight="@dimen/primary_margin"
+        android:layout_marginStart="@dimen/primary_margin"
+        android:layout_marginTop="@dimen/primary_margin">
+
+        <AutoCompleteTextView
+            android:id="@+id/auto_requirement"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_requirement"
+            android:imeOptions="actionNext"
+            android:inputType="textCapWords"
+            android:singleLine="true" />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/primary_margin"
+        android:layout_marginLeft="@dimen/primary_margin"
+        android:layout_marginRight="@dimen/primary_margin"
+        android:layout_marginStart="@dimen/primary_margin">
+
+        <AutoCompleteTextView
+            android:id="@+id/auto_brand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_brand"
+            android:imeOptions="actionNext"
+            android:inputType="textCapWords"
+            android:singleLine="true" />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/primary_margin"
+        android:layout_marginLeft="@dimen/primary_margin"
+        android:layout_marginRight="@dimen/primary_margin"
+        android:layout_marginStart="@dimen/primary_margin">
+
+        <EditText
+            android:id="@+id/edit_quantity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_quantity"
+            android:imeOptions="actionNext"
+            android:inputType="textCapWords"
+            android:singleLine="true" />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/primary_margin"
+        android:layout_marginLeft="@dimen/primary_margin"
+        android:layout_marginRight="@dimen/primary_margin"
+        android:layout_marginStart="@dimen/primary_margin">
+
+        <EditText
+            android:id="@+id/edit_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_desc"
+            android:imeOptions="actionDone"
+            android:inputType="textCapSentences"
+            android:singleLine="true" />
+
+    </android.support.design.widget.TextInputLayout>
+
+</LinearLayout>
