@@ -375,7 +375,8 @@ public class HotDealsFragment extends Fragment {
             holder.btnPlaceBid.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // TODO: handle button click events
+                    ((SellerActivity) getActivity()).showBidItems(Config.KEY_FRAGMENT_HOT_DEALS,
+                            orderItem.getId());
                 }
             });
         }
